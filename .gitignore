@@ -1,5 +1,5 @@
 # Ignore the virtual environment
-venv/
+voice-ai/
 env/
 .venv/
 
