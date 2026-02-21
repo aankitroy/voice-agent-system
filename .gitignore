@@ -1,7 +1,9 @@
 # Ignore the virtual environment
+.vscode/
 voice-ai/
-env/
-.venv/
+__pycache__/
+.env
+venv/
 
 # Ignore sensitive environment variables
 .env
