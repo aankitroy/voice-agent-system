@@ -35,7 +35,7 @@ class User(Base):
     # The email field.
     # - unique=True: The database will throw an error if someone tries to sign up with an email that already exists.
     # - nullable=True: This allows the email to be empty. Useful if you have "guest" users or phone-number-only logins.
-    email = Column(String, unique= True, nullable=True)
+    email = Column(String, unique= True, nullable=False)
 
     # We store the *hashed* version of the password here, never the plain text.
     # - nullable=False: A user absolutely must have a password to exist in this system.
@@ -45,10 +45,12 @@ class User(Base):
     # We set the default to "user" so we don't accidentally create an admin account by mistake.
     role = Column(String, default="user")
 
-    workspace_id = Column(UUID(as_uuid=True), ForeignKey("workspaces.id"))
+    workspace_id = Column(UUID(as_uuid=True), ForeignKey("workspaces.id"), nullable = True)
 
     # Tracks when the user signed up.
     # NOTE: The 'lambda' function here is a pro move. 
     # If we just put `datetime.now()`, the time would be fixed to when the server started.
     # The lambda ensures the function runs fresh *every single time* a new user is added.
     created_at = Column(DateTime, default= lambda: datetime.now(timezone.utc))
+
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))

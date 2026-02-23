@@ -16,3 +16,5 @@ class Agent(Base):
     status = Column(String, default="draft")
 
     created_at = Column(DateTime, default= lambda: datetime.now(timezone.utc))
+
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))

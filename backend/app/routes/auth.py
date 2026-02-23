@@ -38,7 +38,7 @@ def signup(data: SignupSchema, db:Session = Depends(get_db)):
         email = data.email,
         # CRITICAL: We pass the raw password through our hasher BEFORE it ever touches the database object.
         hashed_password = hash_password(data.password),
-        role = "owner" # Hardcoding owner here since they are creating a brand new workspace.
+        role = "owner", # Hardcoding owner here since they are creating a brand new workspace.
     )
 
     # The standard SQLAlchemy dance: add to the staging area, commit to the database, and refresh.
@@ -67,6 +67,9 @@ def signup(data: SignupSchema, db:Session = Depends(get_db)):
 
     # We don't need to refresh here because we don't immediately need the member's ID for anything else.
     db.add(member)
+    db.commit()
+
+    new_user.workspace_id = workspace.id
     db.commit()
 
     # The user just gave us all their info, so let's do them a solid and log them in automatically.

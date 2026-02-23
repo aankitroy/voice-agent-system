@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 from app.models.agent import Agent
 from app.services.bolna_client import BolnaClient
+from app.schemas.agent_schema import AgentCreateSchema, LLMConfig
 
 # Our new security bouncer! This ensures only logged-in users can hit this endpoint.
 from app.utils.dependencies import get_current_user
@@ -19,7 +20,7 @@ router = APIRouter()
 # ------------------------------------------------------------------
 @router.post("/create")
 def create_agent(
-    payload: dict,
+    payload: AgentCreateSchema,
     db: Session = Depends(get_db),
     # By adding this dependency, FastAPI automatically intercepts the request, 
     # verifies the JWT token, and hands us the fully loaded User object right here.
@@ -27,7 +28,7 @@ def create_agent(
 ):
     # Safely extracting the agent name. Using .get() prevents nasty KeyError crashes 
     # if the frontend accidentally sends an incomplete or empty payload.
-    agent_name = payload.get("agent_config", {}).get("agent_name")
+    agent_name = payload.agent_config.get("agent_name")
 
     if not agent_name:
         # PRO-TIP: Throwing a raw Exception works, but raising an HTTPException(status_code=400) 
@@ -38,7 +39,7 @@ def create_agent(
     # This is a brilliant safety net. We save their configuration locally *before* we talk to Bolna.
     agent = Agent(
         name=agent_name,
-        config_json=payload,
+        config_json=payload.model_dump(),
         
         # We automatically link this agent to the current user's workspace using their token.
         # This prevents "Insecure Direct Object Reference" (IDOR) vulnerabilities where hackers 
@@ -59,8 +60,8 @@ def create_agent(
         # We construct exactly what Bolna expects. This sanitizes the data so we aren't 
         # blindly passing everything the frontend gave us to a third-party server.
         bolna_payload = {
-            "agent_config": payload.get("agent_config"),
-            "agent_prompts": payload.get("agent_prompts", {})
+            "agent_config": payload.agent_config,
+            "agent_prompts": payload.agent_prompts
         }
 
         # Fire up our custom client wrapper and make the POST request.

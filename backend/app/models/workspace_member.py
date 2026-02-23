@@ -44,3 +44,5 @@ class WorkspaceMember(Base):
     # As with the User model, the 'lambda' function is critical here.
     # It ensures the timestamp is generated exactly when the user is added to the workspace, not when the app boots up.
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))

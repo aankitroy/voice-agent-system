@@ -53,4 +53,6 @@ class APILog(Base):
     # The exact moment the request happened.
     # Just a tiny heads up on naming conventions: you have a capital 'A' in 'created_At'.
     # Standard Python practice (PEP 8) is all lowercase ('created_at'), but it'll work perfectly fine as-is!
-    created_At = Column(DateTime, default= lambda: datetime.now(timezone.utc))
+    created_at = Column(DateTime, default= lambda: datetime.now(timezone.utc))
+
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))

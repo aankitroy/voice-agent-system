@@ -8,7 +8,7 @@ from sqlalchemy import Column, String, Float, DateTime, JSON
 from sqlalchemy.dialects.postgresql import UUID
 
 # Standard time and unique ID utilities.
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 
 # Bringing in our SQLAlchemy declarative base.
@@ -86,4 +86,6 @@ class Execution(Base):
     # 💡 PRO-TIP: `datetime.utcnow` is technically deprecated in newer versions of Python (3.12+).
     # You might want to swap this to `lambda: datetime.now(timezone.utc)` just like you 
     # brilliantly did in your previous models!
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default= lambda: datetime.now(timezone.utc))
+
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))

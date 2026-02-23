@@ -62,3 +62,5 @@ class Workspace(Base):
     # To ensure it captures the time *when the row is inserted*, it is often better to pass the function itself 
     # without parentheses (e.g., default=datetime.utcnow) or use `server_default`.
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
