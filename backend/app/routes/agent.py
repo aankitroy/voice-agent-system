@@ -16,8 +16,21 @@ router = APIRouter()
 
 
 # ------------------------------------------------------------------
+# GET AGENTS ENDPOINT
+# ------------------------------------------------------------------
+@router.get("/list")
+def list_agents(
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    agents = db.query(Agent).filter(
+        Agent.workspace_id == current_user.workspace_id
+    ).all()
+    return agents
+# ------------------------------------------------------------------
 # CREATE AGENT ENDPOINT (DRAFT & PUBLISH PATTERN)
 # ------------------------------------------------------------------
+
 @router.post("/create")
 def create_agent(
     payload: AgentCreateSchema,
@@ -93,3 +106,4 @@ def create_agent(
 
         # We re-raise the error so the frontend knows exactly why it failed and can show a toast notification.
         raise Exception(f"Agent creation failed: {str(e)}")
+
