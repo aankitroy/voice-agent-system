@@ -16,7 +16,7 @@ router = APIRouter()
 
 
 # This is a POST request because triggering a call is an "action" that creates new data.
-@router.post("/make")
+@router.post("/make-call")
 def make_call(
     agent_id: str,
     to_number: str,
