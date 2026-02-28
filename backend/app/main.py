@@ -16,13 +16,15 @@ from app.routes import auth #IMPORTING ROUTES
 from app.routes import agent
 from app.routes import webhook
 from app.routes import calls
+from app.routes import settings
 
 # --------------------------------------------------------------
 
 app = FastAPI(title="Voice AI SaaS Platform")
 
 origins = [
-    "http://localhost:3000"
+    "http://localhost:3000",
+    "http://127.0.0.1:3000"
 ]
 
 app.add_middleware(
@@ -45,6 +47,7 @@ app.include_router(auth.router, prefix="/auth", tags=["Auth"])
 app.include_router(agent.router, prefix="/agent", tags = ["Agents"])
 app.include_router(webhook.router, prefix="/webhook", tags=["Webhook"])
 app.include_router(calls.router, prefix="/calls", tags = ["Calls"])
+app.include_router(settings.router, prefix='/settings', tags = ["Settings"])
 
 # ----------------------------------------------------------------------
 
