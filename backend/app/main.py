@@ -11,12 +11,14 @@ from app.models.agent import Agent
 from app.models.execution import Execution
 from app.models.api_log import APILog
 from app.models.webhook import WebhookLog
+from app.models.knowledge_base import KnowledgeBase
 # -------------------------------------------------------------
 from app.routes import auth #IMPORTING ROUTES
 from app.routes import agent
 from app.routes import webhook
 from app.routes import calls
 from app.routes import settings
+from app.routes import knowledge_base
 
 # --------------------------------------------------------------
 
@@ -48,6 +50,7 @@ app.include_router(agent.router, prefix="/agent", tags = ["Agents"])
 app.include_router(webhook.router, prefix="/webhook", tags=["Webhook"])
 app.include_router(calls.router, prefix="/calls", tags = ["Calls"])
 app.include_router(settings.router, prefix='/settings', tags = ["Settings"])
+app.include_router(knowledge_base.router, prefix="/knowledge-base", tags=["Knowledge Base"])
 
 # ----------------------------------------------------------------------
 

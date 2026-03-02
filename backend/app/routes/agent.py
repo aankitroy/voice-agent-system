@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.models.agent import Agent
+from app.models.knowledge_base import KnowledgeBase
 from app.services.bolna_client import BolnaClient
 from app.schemas.agent_schema import AgentCreateSchema
 from app.utils.dependencies import get_current_user
@@ -44,6 +45,17 @@ def create_agent(
     db.refresh(agent)
 
     try:
+        # KB vector_id fetch karo
+        rag_config = payload.agent_config.get("rag_config")
+        vector_id = None
+
+        if rag_config:
+            kb = db.query(KnowledgeBase).filter(
+                KnowledgeBase.rag_id == rag_config.get("rag_id")
+            ).first()
+            if kb:
+                vector_id = kb.vector_id
+
         bolna_payload = {
             "agent_config": {
                 "agent_name": payload.agent_config.get("agent_name"),
@@ -54,16 +66,24 @@ def create_agent(
                         "task_type": "conversation",
                         "tools_config": {
                             "llm_agent": {
-                                "agent_type": "simple_llm_agent",
+                                "agent_type": "knowledgebase_agent" if vector_id else "simple_llm_agent",
                                 "agent_flow_type": "streaming",
                                 "llm_config": {
-                                    "provider": "openai",
-                                    "model": "gpt-4.1-mini",
+                                    "provider": payload.agent_config.get("llm_provider", "openai"),
+                                    "model": payload.agent_config.get("llm_model", "gpt-4.1-mini"),
                                     "max_tokens": 150,
                                     "temperature": 0.1,
                                     "agent_flow_type": "streaming",
-                                    "family": "openai",
-                                    "base_url": "https://api.openai.com/v1"
+                                    "family": payload.agent_config.get("llm_provider", "openai"),
+                                    "base_url": "https://api.anthropic.com" if payload.agent_config.get("llm_provider") == "anthropic" else "https://api.openai.com/v1",
+                                    **({"rag_config": {
+                                        "vector_store": {
+                                            "provider": "LanceDB",
+                                            "provider_config": {
+                                                "vector_ids": [vector_id]
+                                            }
+                                        }
+                                    }} if vector_id else {})
                                 }
                             },
                             "transcriber": {
