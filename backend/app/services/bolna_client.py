@@ -31,7 +31,7 @@ class BolnaClient:
         self.db = db
     
     # A private helper function (indicated by the underscore '_log').
-    # We don't expect the rest of our app to call this directly; it's just for internal use by the GET and POST methods.
+    # We don't expect the rest of our app to call this directly; it's just for internal use by the GET and POST and PUT methods.
     def _log(self, endpoint, method, request_json, response, status_code):
         # We build the log record.
         log = APILog(
@@ -65,7 +65,7 @@ class BolnaClient:
 
         # The actual magical call to the external server! 
         # We pass the payload to the `json` parameter, and requests automatically serializes it for us.
-        res = requests.post(url, json=payload, headers=headers)
+        res = requests.post(url, json=payload, headers=headers, timeout=15)
 
         print("Bolna response status:", res.status_code)
         print("Bolna response text:", res.text)
@@ -90,10 +90,32 @@ class BolnaClient:
         }
 
         # Firing off the GET request.
-        res = requests.get(url, headers=headers)
+        res = requests.get(url, headers=headers, timeout=15)
 
         # Logging it. Since GET requests don't have a payload, passing `None` for the request_json is perfect.
-        self._log(endpoint, "GET", None, res.json(), res.status_code)
+        try:
+            response_json = res.json()
+        except Exception:
+            response_json = {"raw_text": res.text}
 
-        # Returning the payload.
-        return res.json()
+        self._log(endpoint, "GET", None, response_json, res.status_code)
+        return response_json
+    
+    def put(self, endpoint: str, payload: dict):
+        url = f"{BOLNA_BASE_URL}{endpoint}"
+        headers = {
+            "Authorization": f"Bearer {BOLNA_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        response = requests.put(
+            url,
+            json=payload,
+            headers=headers,
+            timeout= 15
+        )
+        try:
+            response_json = response.json()
+        except Exception:
+            response_json = {"raw_text": response.text}
+        self._log(endpoint, "PUT", payload, response_json, response.status_code)
+        return response_json

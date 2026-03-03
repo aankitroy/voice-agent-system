@@ -27,7 +27,7 @@ def list_calls(
     return calls
 
 
-@router.post("/make-call")
+@router.post("/make-call") # not hyphen call
 def make_call(
     payload: MakeCallSchema,
     db: Session = Depends(get_db),
