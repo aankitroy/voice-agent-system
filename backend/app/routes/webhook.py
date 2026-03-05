@@ -9,7 +9,9 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 from app.models.execution import Execution
 from app.models.webhook import WebhookLog
-
+from app.models.agent import Agent
+from datetime import datetime, timezone
+from app.models.workspace_credits import WorkspaceCredits
 router = APIRouter()
 
 # ------------------------------------------------------------------
@@ -77,6 +79,24 @@ async def bolna_webhook(request: Request, db: Session = Depends(get_db)):
 
     # Finally, we update the raw_json in the Execution table to reflect the most recent state.
     execution.raw_json = payload
+    print("STATUS:", payload.get("status"))
+    print("COST:", payload.get("total_cost"))
+    # managing credits
+    if payload.get("status") == "completed" and payload.get("total_cost"):
+        agent = db.query(Agent).filter(
+            Agent.bolna_agent_id == payload.get("agent_id")
+        ).first()
+
+        if agent:
+            credits = db.query(WorkspaceCredits).filter(
+                WorkspaceCredits.workspace_id == agent.workspace_id
+            ).first()
+
+            if credits:
+                cost = float(payload.get("total_cost", 0))
+                credits.credits -= cost
+                credits.total_used += cost
+                credits.updated_at = datetime.now(timezone.utc)
 
     # We save all these updates to the database.
     db.commit()

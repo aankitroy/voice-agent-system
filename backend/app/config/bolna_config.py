@@ -1,4 +1,9 @@
 import json
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+WEBHOOK_URL = os.getenv("WEBHOOK_URL")
 def get_bolna_payload(agent_config: dict, agent_prompts: dict, vector_id: str = None) -> dict:
     llm_provider = agent_config.get("llm_provider", "openai")
     payload = {
@@ -6,6 +11,7 @@ def get_bolna_payload(agent_config: dict, agent_prompts: dict, vector_id: str = 
             "agent_name": agent_config.get("agent_name"),
             "agent_type": "other",
             "agent_welcome_message": agent_config.get("agent_welcome_message"),
+            "webhook_url": WEBHOOK_URL,
             "tasks": [
                 {
                     "task_type": "conversation",

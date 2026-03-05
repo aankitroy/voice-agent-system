@@ -141,3 +141,28 @@ def update_agent(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Update failed: {str(e)}")
+
+
+@router.post("/{agent_id}/set-inbound")
+def set_inbound(
+    agent_id: str,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    agent = db.query(Agent).filter(
+        Agent.id == agent_id,
+        Agent.workspace_id == current_user.workspace_id
+    ).first()
+
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+
+    if not agent.bolna_agent_id:
+        raise HTTPException(status_code=400, detail="Agent not deployed to Bolna")
+
+    bolna = BolnaClient(db)
+    response = bolna.post("/inbound/setup", {
+        "agent_id": agent.bolna_agent_id
+    })
+
+    return response
